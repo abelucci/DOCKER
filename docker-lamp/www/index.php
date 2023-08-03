@@ -8,10 +8,8 @@
     <body>
         <div class="container-fluid">
             <?php
-                echo "<h1>¡Hola, Antonio te da la bienvenida!</h1>";
-
+                echo "<h1>¡Hola, EDU IT te da la bienvenida!</h1>";
                 $conn = mysqli_connect('db', 'root', 'test', "dbname");
-
                 $query = 'SELECT * From Person';
                 $result = mysqli_query($conn, $query);
 

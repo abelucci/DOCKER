@@ -59,3 +59,59 @@ Comandos utiles:
 * Probar desde el navegador:
 
   ![1713382384856.png](./images/1713382384856.png)
+* Manipular archivos en el server, modo interactivo:
+
+  ```
+  docker exec -it my-apache-app bash
+  ```
+
+  ```
+  <my-apache-app> es el nombre del contenedor
+  ```
+* Modificamos el index.html para verificar si efectivamente se puede realizar cambios en el contenedor:
+
+  ```
+  echo "<h1> Curso Edu IT </h1>" > index.html
+  ```
+
+  ```
+  cat index.html
+  ```
+
+  ![1713383904717.png](./images/1713383904717.png)
+
+  ![1713383924860.png](./images/1713383924860.png)
+
+# **CREAR IMAGENES PROPIAS MEDIANTE DOCKERFILE**
+
+Primeramente, crear la esctructura de archivos, dockerfile y complementos.
+
+* Crear imagen:
+
+  ```
+  docker build -t helloeduit .
+  ```
+
+  El parámetro -t nos permite etiquetar la imagen y una verión, represntada por dos puntos, :v1, :v2.1
+  Y el . nos indica el build context, la raiz desde donde va a utilizar los archivos, el directorio actual
+* Verificamos la imagen creada:
+
+  ```
+  docker imagen ls
+  ```
+
+  ![1713384573845.png](./images/1713384573845.png)
+* Lanzamos la app:
+
+  ```
+  docker run --rm -p 4000:80 helloeduit
+  ```
+
+  EL parametro --rm borra automáticamente el contenedor una vez parado.
+
+  Arranca la aplicación Flask:
+
+  ![1713384745335.png](./images/1713384745335.png)
+* Comprobación de la app:
+
+  ![1713384775868.png](./images/1713384775868.png)

@@ -115,3 +115,34 @@ Primeramente, crear la esctructura de archivos, dockerfile y complementos.
 * Comprobación de la app:
 
   ![1713384775868.png](./images/1713384775868.png)
+
+  # **DOCKER COMPOSE**
+
+  Crear estructura para poder deployar los componentes.
+* Iniciar docker compose:
+
+  ```
+  docker compose up
+  ```
+* Parar:
+
+  ```
+  docker compose stop
+  ```
+* Listar:
+
+  ```
+  docker compose ps
+  ```
+* Eliminar:
+
+  ```
+  docker compose down
+  ```
+
+---
+
+# **BIBLIOGRAFÍA**
+
+* [https://docs.docker.com/compose/gettingstarted/](https://docs.docker.com/compose/gettingstarted/)
+*

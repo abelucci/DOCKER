@@ -18,6 +18,7 @@ jobs:
             - name: Build and push docker images
               uses: docker/build-push-action@v4
               with:
+                #directorio en donde se encuentra el dockerfile
                 context: helloword/
                 push: true
                 tags: abelucci/test:latest

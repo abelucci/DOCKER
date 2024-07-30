@@ -4,10 +4,29 @@ import os
 from flask_bootstrap import Bootstrap
 from flask_fontawesome import FontAwesome
 import json
+from prometheus_client import start_http_server, Summary, Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+import time
 
 app = Flask(__name__)
 Bootstrap(app)
 fa = FontAwesome(app)
+
+# Definir métricas prometheus
+REQUEST_TIME = Histogram('flask_request_duration_seconds', 'Request duration', ['method', 'endpoint'])
+REQUEST_COUNT = Counter('flask_request_count', 'Total number of requests', ['method', 'endpoint', 'status_code'])
+
+@app.before_request
+def before_request():
+    request.start_time = time.time()
+
+@app.after_request
+def after_request(response):
+    request_latency = time.time() - request.start_time
+    endpoint = request.endpoint if request.endpoint else 'unknown'
+    REQUEST_TIME.labels(request.method, endpoint).observe(request_latency)
+    REQUEST_COUNT.labels(request.method, endpoint, response.status_code).inc()
+    return response
+##########
 
 @app.route('/')
 def index():
@@ -39,6 +58,13 @@ def get_pokemon():
 	except:
 		return redirect(url_for('index'))
 
+### AGREGAR METRICAS PARA SCRAPEAR APP
+@app.route('/metrics')
+def metrics():
+    return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+#######
+
 port = int(os.environ.get('PORT', 5000)) 
 if __name__ == '__main__':
+	start_http_server(8000)  # Exponer métricas en el puerto 8000
 	app.run(thre=True, port=port, debug=True)

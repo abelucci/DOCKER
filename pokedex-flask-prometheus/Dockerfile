@@ -1,19 +1,23 @@
-#Usando una imagen de base de python para facilitarnos la creacion de la imagen
+# Usando una imagen de base de python para facilitarnos la creación de la imagen
 FROM python:latest
-#Creamos el directorio principal de trabajo
+
+# Creamos el directorio principal de trabajo
 RUN mkdir /app
 WORKDIR /app
-#Copiamos nuestros archivos a nuestro directorio principal de trabajo
+
+# Copiamos nuestros archivos a nuestro directorio principal de trabajo
 COPY . /app
 COPY requirements.txt /app/
-#Instalamos las dependencias de la aplicacion 
+
+# Instalamos las dependencias de la aplicación
 RUN pip install -r requirements.txt
-#Creamos una variable para no tener que especificar el nombre del archivo .py en el cmd
-RUN export FLASK_APP=app.py
-#El puerto expuesto es el default de flask, el 5000, y el 8000 para prometheus
+
+# El puerto expuesto es el default de flask, el 5000 y también el puerto 8000 para Prometheus
 EXPOSE 5000
 EXPOSE 8000
-#El comando ejecutado sera python -m flask run --host 0.0.0.0, de esta forma podremos acceder de forma correcta al servicio
-CMD ["python", "-m", "flask", "run", "--host", "0.0.0.0"]
+
+# El comando ejecutado será nuestro script que arranca tanto Flask como Prometheus
+CMD ["python", "app.py"]
+
 
 

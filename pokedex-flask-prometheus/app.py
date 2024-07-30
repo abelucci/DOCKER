@@ -1,43 +1,27 @@
-from flask import Flask, request, render_template, redirect, url_for, Response
+from flask import Flask, render_template, url_for, request, redirect
+import requests
+import os
 from flask_bootstrap import Bootstrap
 from flask_fontawesome import FontAwesome
-from prometheus_client import start_http_server, Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
-import os
-import requests
-import time
-import logging
-import multiprocessing
-
-# Configuración de logging
-logging.basicConfig(level=logging.INFO)
+from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST, start_http_server
+import threading
 
 app = Flask(__name__)
 Bootstrap(app)
 fa = FontAwesome(app)
 
-# Definir métricas
-REQUEST_TIME = Histogram('flask_request_duration_seconds', 'Request duration', ['method', 'endpoint'])
-REQUEST_COUNT = Counter('flask_request_count', 'Total number of requests', ['method', 'endpoint', 'status_code'])
-
-@app.before_request
-def before_request():
-    request.start_time = time.time()
-
-@app.after_request
-def after_request(response):
-    request_latency = time.time() - request.start_time
-    endpoint = request.endpoint if request.endpoint else 'unknown'
-    REQUEST_TIME.labels(request.method, endpoint).observe(request_latency)
-    REQUEST_COUNT.labels(request.method, endpoint, response.status_code).inc()
-    return response
+# Define a counter metric
+REQUEST_COUNT = Counter('app_requests_total', 'Total number of requests')
 
 @app.route('/')
 def index():
-    pokemon = [" ".join(i["name"].split("-")).title() for i in requests.get(f'https://pokeapi.co/api/v2/pokemon/?limit=-1').json()["results"]]
+    REQUEST_COUNT.inc()
+    pokemon = [" ".join(i["name"].split("-")).title() for i in requests.get('https://pokeapi.co/api/v2/pokemon/?limit=-1').json()["results"]]
     return render_template('index.html', pokemon=pokemon)
 
 @app.route('/<pokemon>')
 def pokemon(pokemon):
+    REQUEST_COUNT.inc()
     try:
         req = requests.get(f'https://pokeapi.co/api/v2/pokemon/{pokemon}').json()
         print(req["id"])
@@ -54,6 +38,7 @@ def pokemon(pokemon):
 
 @app.route('/get_pokemon', methods=['POST'])
 def get_pokemon():
+    REQUEST_COUNT.inc()
     try:
         pokemon = request.form['pokemon']
         pk = "-".join(pokemon.split(" ")).lower()
@@ -61,27 +46,18 @@ def get_pokemon():
     except:
         return redirect(url_for('index'))
 
-@app.route('/metrics')
-def metrics():
-    return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
-
-def start_prometheus():
-    logging.info('Attempting to start Prometheus metrics server on port 8000')
+def start_metrics_server():
     try:
         start_http_server(8000)
-        logging.info('Prometheus metrics server successfully started on port 8000')
-    except Exception as e:
-        logging.error(f'Failed to start Prometheus metrics server: {e}')
+    except OSError as e:
+        if e.errno == 98:
+            print("Port 8000 is already in use")
+        else:
+            raise
 
-port = int(os.environ.get('PORT', 5000))
 if __name__ == '__main__':
-    # Iniciar el servidor de Prometheus en un proceso separado
-    prometheus_process = multiprocessing.Process(target=start_prometheus)
-    prometheus_process.start()
-    logging.info('Prometheus process started')
-    
-    logging.info(f'Starting Flask app on port {port}')
-    app.run(threaded=True, host='0.0.0.0', port=port)
-
-    # Asegurarse de que el proceso de Prometheus se cierre correctamente al finalizar
-    prometheus_process.join()
+    # Start metrics server in a new thread
+    threading.Thread(target=start_metrics_server).start()
+    # Start the Flask app server
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)

@@ -92,7 +92,7 @@ Primeramente, crear la esctructura de archivos, dockerfile y complementos.
   docker build -t helloeduit .
   ```
 
-  El parámetro -t nos permite etiquetar la imagen y una verión, represntada por dos puntos, :v1, :v2.1
+  El parámetro -t nos permite etiquetar la imagen y una versión, representada por dos puntos, :v1, :v2.1
   Y el . nos indica el build context, la raiz desde donde va a utilizar los archivos, el directorio actual
 * Verificamos la imagen creada:
 
